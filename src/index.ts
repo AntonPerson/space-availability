@@ -1,4 +1,4 @@
-import { OpeningTimes, Space } from "./types";
+import { OpeningTimes, Space, Time } from "./types";
 import { dateInTimezone, formatIsoDate } from "./date-utils";
 import { compareTimes, next15MinutesInterval } from "./time-utils";
 
@@ -14,19 +14,28 @@ export const fetchAvailability = (
   now: Date
 ): Record<string, OpeningTimes> => {
   const { day, hour, minute } = dateInTimezone(now, space.timeZone);
-  const { open, close } = space.openingTimes[day] || {};
+  const today = fetchAvailabilityForToday(space.openingTimes[day] || {}, {
+    hour,
+    minute,
+  });
+  const currentDate = formatIsoDate(now);
 
+  return {
+    [currentDate]: today,
+  };
+};
+
+export const fetchAvailabilityForToday = (
+  { open, close }: OpeningTimes,
+  { hour, minute }: Time
+): OpeningTimes => {
   if (!open || !close) {
     return {};
   }
 
-  const currentDate = formatIsoDate(now);
-
   const wasOpened = compareTimes({ hour, minute }, open) >= 0;
   if (!wasOpened) {
-    return {
-      [currentDate]: { open, close },
-    };
+    return { open, close };
   }
 
   const nextMinute = next15MinutesInterval(minute);
@@ -42,18 +51,14 @@ export const fetchAvailability = (
       close
     ) >= 0;
   if (isClosed) {
-    return {
-      [currentDate]: {},
-    };
+    return {};
   }
 
   return {
-    [currentDate]: {
-      open: {
-        hour: nextHour,
-        minute: nextMinute,
-      },
-      close,
+    open: {
+      hour: nextHour,
+      minute: nextMinute,
     },
+    close,
   };
 };
