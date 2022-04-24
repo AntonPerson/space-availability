@@ -1,10 +1,6 @@
 import { OpeningTimes, Space } from "./types";
-import {
-  dateInTimezone,
-  next15MinutesInterval,
-  formatIsoDate,
-} from "./date-utils";
-import { compareTimes } from "./time-utils";
+import { dateInTimezone, formatIsoDate } from "./date-utils";
+import { compareTimes, next15MinutesInterval } from "./time-utils";
 
 /**
  * Fetches upcoming availability for a space
@@ -24,25 +20,38 @@ export const fetchAvailability = (
     return {};
   }
 
+  const currentDate = formatIsoDate(now);
+
   const wasOpened = compareTimes({ hour, minute }, open) >= 0;
   if (!wasOpened) {
     return {
-      [formatIsoDate(now)]: { open, close },
+      [currentDate]: { open, close },
     };
   }
 
-  const wasClosed = compareTimes({ hour, minute }, close) >= 0;
-  if (wasClosed) {
+  const nextMinute = next15MinutesInterval(minute);
+  // If we shift into next hour, we need to increase the hour as well
+  const nextHour = nextMinute === 0 ? hour + 1 : hour;
+
+  const isClosed =
+    compareTimes(
+      {
+        hour: nextHour,
+        minute: nextMinute,
+      },
+      close
+    ) >= 0;
+  if (isClosed) {
     return {
-      [formatIsoDate(now)]: {},
+      [currentDate]: {},
     };
   }
 
   return {
-    [formatIsoDate(now)]: {
+    [currentDate]: {
       open: {
-        hour,
-        minute: next15MinutesInterval(minute),
+        hour: nextHour,
+        minute: nextMinute,
       },
       close,
     },
