@@ -18,16 +18,18 @@ export const fetchAvailability = (
   numberOfDays: number,
   now: Date
 ): Record<string, OpeningTimes> => {
+  if (!numberOfDays || numberOfDays < 1) {
+    return {};
+  }
   return {
-    ...fetchAvailabilityForToday(space, numberOfDays, now),
-    ...fetchAvailabilityForFutureDays(space, numberOfDays, now),
+    ...fetchAvailabilityForToday(space, now),
+    ...fetchAvailabilityForFutureDays(space, numberOfDays - 1, now),
   };
 };
 
 /**
  * Calculate availability just for today
  * @param space The space to fetch the availability for
- * @param numberOfDays The number of days from `now` to fetch availability for
  * @param now The time now
  * @returns availability for today, f.e.:
  *   {
@@ -45,12 +47,8 @@ export const fetchAvailability = (
  */
 export const fetchAvailabilityForToday = (
   space: Space,
-  numberOfDays: number,
   now: Date
 ): Record<string, OpeningTimes> => {
-  if (!numberOfDays || numberOfDays < 1) {
-    return {};
-  }
   const nowWithNotice = new Date(
     now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
   );
@@ -88,7 +86,8 @@ export const fetchAvailabilityForToday = (
 /**
  * Calculate availability for tomorrow and all future days
  * @param space The space to fetch the availability for
- * @param numberOfDays The number of days from `now` to fetch availability for
+ * @param numberOfDays The number of days starting from tomorrow to fetch availability for
+ *                     (f.e. just tomorrow => numberOfDays = 1)
  * @param now The time now
  * @returns availabilities for future days, f.e.:
  *   {
@@ -109,7 +108,7 @@ export const fetchAvailabilityForFutureDays = (
   numberOfDays: number,
   now: Date
 ): Record<string, OpeningTimes> => {
-  if (numberOfDays < 2) {
+  if (numberOfDays < 1) {
     return {};
   }
   const nowWithNotice = new Date(
@@ -119,7 +118,7 @@ export const fetchAvailabilityForFutureDays = (
   const startDay = (day + 1) % 7;
 
   const availabilities: Record<string, OpeningTimes> = {};
-  for (let i = 0; i < numberOfDays - 1; i++) {
+  for (let i = 0; i < numberOfDays; i++) {
     const currentDay = (startDay + i) % 7;
     const currentDate = formatIsoDate(
       new Date(nowWithNotice.valueOf() + (i + 1) * DAY_IN_MSEC)
