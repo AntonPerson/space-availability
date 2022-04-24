@@ -13,37 +13,50 @@ export const fetchAvailability = (
   numberOfDays: number,
   now: Date
 ): Record<string, OpeningTimes> => {
-  const { day, hour, minute } = dateInTimezone(now, space.timeZone);
-  const today = fetchAvailabilityForToday(space.openingTimes[day || 7] || {}, {
-    hour,
-    minute,
-  });
-  const currentDate = formatIsoDate(now);
-  const future = fetchAvailabilityForFutureDays(space, numberOfDays, now);
   return {
-    [currentDate]: today,
-    ...future,
+    ...fetchAvailabilityForToday(space, numberOfDays, now),
+    ...fetchAvailabilityForFutureDays(space, numberOfDays, now),
   };
 };
 
-// TODO: should have better signature
 /**
  * Calculate availability just for today
- * @param todaysOpeningTimes - the opening times for today
- * @param currentTime - the current time
- * @returns availability for today
+ * @param space The space to fetch the availability for
+ * @param numberOfDays The number of days from `now` to fetch availability for
+ * @param now The time now
+ * @returns availability for today, f.e.:
+ *   {
+ *     "2020-09-07": {
+ *       open: {
+ *         hour: 11,
+ *         minute: 30,
+ *       },
+ *       close: {
+ *         hour: 17,
+ *         minute: 0,
+ *       },
+ *     },
+ *   }
  */
 export const fetchAvailabilityForToday = (
-  { open, close }: OpeningTimes,
-  { hour, minute }: Time
-): OpeningTimes => {
-  if (!open || !close) {
+  space: Space,
+  numberOfDays: number,
+  now: Date
+): Record<string, OpeningTimes> => {
+  if (!numberOfDays || numberOfDays < 1) {
     return {};
+  }
+  const { day, hour, minute } = dateInTimezone(now, space.timeZone);
+  const currentDate = formatIsoDate(now);
+
+  const { open, close } = space.openingTimes[day || 7] || {};
+  if (!open || !close) {
+    return { [currentDate]: {} };
   }
 
   const wasOpened = compareTimes({ hour, minute }, open) >= 0;
   if (!wasOpened) {
-    return { open, close };
+    return { [currentDate]: { open, close } };
   }
 
   const nextMinute = next15MinutesInterval(minute);
@@ -53,12 +66,14 @@ export const fetchAvailabilityForToday = (
 
   const isClosed = compareTimes(nextPossibleOpenTime, close) >= 0;
   if (isClosed) {
-    return {};
+    return { [currentDate]: {} };
   }
 
   return {
-    open: nextPossibleOpenTime,
-    close,
+    [currentDate]: {
+      open: nextPossibleOpenTime,
+      close,
+    },
   };
 };
 
@@ -98,7 +113,7 @@ export const fetchAvailabilityForFutureDays = (
     const currentDate = formatIsoDate(
       new Date(now.valueOf() + (i + 1) * DAY_IN_MSEC)
     );
-    availabilities[currentDate] = space.openingTimes[currentDay || 7];
+    availabilities[currentDate] = space.openingTimes[currentDay || 7] || {};
   }
   return availabilities;
 };
