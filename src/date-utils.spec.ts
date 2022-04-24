@@ -15,12 +15,12 @@ describe("src/date-utils", () => {
       });
     });
 
-    it("uses 7 as day for Sunday", () => {
+    it("uses 0 as day for Sunday", () => {
       const result = dateInTimezone(
         new Date(Date.UTC(2020, 8, 6, 15, 22)),
         "America/New_York"
       );
-      expect(result.day).toStrictEqual(7);
+      expect(result.day).toStrictEqual(0);
     });
 
     it("uses next day if timezone shifts time after midnight", () => {
@@ -36,7 +36,7 @@ describe("src/date-utils", () => {
         new Date(Date.UTC(2020, 8, 7, 4, 22)), // -> London: Monday morning
         "America/Los_Angeles"
       );
-      expect(result.day).toStrictEqual(7); // -> Los Angeles: Sunday evening
+      expect(result.day).toStrictEqual(0); // -> Los Angeles: Sunday evening
     });
   });
 

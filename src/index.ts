@@ -14,7 +14,7 @@ export const fetchAvailability = (
   now: Date
 ): Record<string, OpeningTimes> => {
   const { day, hour, minute } = dateInTimezone(now, space.timeZone);
-  const today = fetchAvailabilityForToday(space.openingTimes[day] || {}, {
+  const today = fetchAvailabilityForToday(space.openingTimes[day || 7] || {}, {
     hour,
     minute,
   });
@@ -90,8 +90,7 @@ export const fetchAvailabilityForFutureDays = (
     return {};
   }
   const { day } = dateInTimezone(now, space.timeZone);
-  const today = day - 1; // TODO: day should probably be zero-based
-  const startDay = (today + 1) % 7;
+  const startDay = (day + 1) % 7;
 
   const availabilities: Record<string, OpeningTimes> = {};
   for (let i = 0; i < numberOfDays - 1; i++) {
@@ -99,7 +98,7 @@ export const fetchAvailabilityForFutureDays = (
     const currentDate = formatIsoDate(
       new Date(now.valueOf() + (i + 1) * DAY_IN_MSEC)
     );
-    availabilities[currentDate] = space.openingTimes[currentDay + 1];
+    availabilities[currentDate] = space.openingTimes[currentDay || 7];
   }
   return availabilities;
 };
