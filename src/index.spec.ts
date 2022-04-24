@@ -29,5 +29,26 @@ describe("src/index", () => {
         },
       });
     });
+
+    it("fetches availability for a space that is not yet opened", () => {
+      const availability = fetchAvailability(
+        space,
+        1,
+        new Date(Date.UTC(2020, 8, 7, 11, 22))
+      );
+
+      expect(availability).toStrictEqual({
+        "2020-09-07": {
+          open: {
+            hour: 9,
+            minute: 0,
+          },
+          close: {
+            hour: 17,
+            minute: 0,
+          },
+        },
+      });
+    });
   });
 });
