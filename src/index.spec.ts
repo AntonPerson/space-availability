@@ -52,11 +52,44 @@ describe("src/index", () => {
         });
       });
 
-      it("after the space was closed", () => {
+      it("when the space is about to close", () => {
         const availability = fetchAvailability(
           space,
           1,
-          new Date(Date.UTC(2020, 8, 7, 21, 22))
+          new Date(Date.UTC(2020, 8, 7, 20, 44))
+        );
+
+        expect(availability).toStrictEqual({
+          "2020-09-07": {
+            open: {
+              hour: 16,
+              minute: 45,
+            },
+            close: {
+              hour: 17,
+              minute: 0,
+            },
+          },
+        });
+      });
+
+      it("when the space is closing", () => {
+        const availability = fetchAvailability(
+          space,
+          1,
+          new Date(Date.UTC(2020, 8, 7, 20, 45))
+        );
+
+        expect(availability).toStrictEqual({
+          "2020-09-07": {},
+        });
+      });
+
+      it("after the space was closed already", () => {
+        const availability = fetchAvailability(
+          space,
+          1,
+          new Date(Date.UTC(2020, 8, 7, 21, 0))
         );
 
         expect(availability).toStrictEqual({
