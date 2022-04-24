@@ -22,8 +22,26 @@ describe("src/time-utils", () => {
   });
 
   describe("next15MinutesInterval(minute)", () => {
-    it("rounds 22 to 30", () => {
-      expect(next15MinutesInterval(22)).toStrictEqual(30);
+    it("rounds 0 to 15", () => {
+      expect(next15MinutesInterval(0)).toStrictEqual(15);
+    });
+    it("rounds 14 to 15", () => {
+      expect(next15MinutesInterval(14)).toStrictEqual(15);
+    });
+    it("rounds 15 to 30", () => {
+      expect(next15MinutesInterval(14)).toStrictEqual(15);
+    });
+    it("rounds 29 to 30", () => {
+      expect(next15MinutesInterval(29)).toStrictEqual(30);
+    });
+    it("rounds 30 to 45", () => {
+      expect(next15MinutesInterval(30)).toStrictEqual(45);
+    });
+    it("rounds 44 to 45", () => {
+      expect(next15MinutesInterval(44)).toStrictEqual(45);
+    });
+    it("rounds 45 to 0", () => {
+      expect(next15MinutesInterval(45)).toStrictEqual(0);
     });
     it("rounds 59 to 0", () => {
       expect(next15MinutesInterval(59)).toStrictEqual(0);

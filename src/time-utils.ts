@@ -24,4 +24,4 @@ export const compareTimes = (timeA: Time, timeB: Time) => {
  *    [30..44] => 45
  */
 export const next15MinutesInterval = (actualMinute: number) =>
-  (Math.ceil(actualMinute / 15) * 15) % 60;
+  (Math.ceil((actualMinute + 1) / 15) * 15) % 60;
