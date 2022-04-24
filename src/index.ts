@@ -21,16 +21,20 @@ export const fetchAvailability = (
   if (!numberOfDays || numberOfDays < 1) {
     return {};
   }
+  const afterNotice = new Date(
+    now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
+  );
+
   return {
-    ...fetchAvailabilityForToday(space, now),
-    ...fetchAvailabilityForFutureDays(space, numberOfDays - 1, now),
+    ...fetchAvailabilityForToday(space, afterNotice),
+    ...fetchAvailabilityForFutureDays(space, afterNotice, numberOfDays - 1),
   };
 };
 
 /**
  * Calculate availability just for today
  * @param space The space to fetch the availability for
- * @param now The time now
+ * @param afterNotice The current date after the notice period
  * @returns availability for today, f.e.:
  *   {
  *     "2020-09-07": {
@@ -47,19 +51,17 @@ export const fetchAvailability = (
  */
 export const fetchAvailabilityForToday = (
   space: Space,
-  now: Date
+  afterNotice: Date
 ): Record<string, OpeningTimes> => {
-  const nowWithNotice = new Date(
-    now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
-  );
-  const { day, hour, minute } = dateInTimezone(nowWithNotice, space.timeZone);
-  const currentDate = formatIsoDate(nowWithNotice);
+  const { day, hour, minute } = dateInTimezone(afterNotice, space.timeZone);
+  const currentDate = formatIsoDate(afterNotice);
 
   const { open, close } = space.openingTimes[day || 7] || {};
   if (!open || !close) {
     return { [currentDate]: {} };
   }
 
+  // CASE 1: Space is not opened yet for today => full opening time
   const wasOpened = compareTimes({ hour, minute }, open) >= 0;
   if (!wasOpened) {
     return { [currentDate]: { open, close } };
@@ -70,11 +72,13 @@ export const fetchAvailabilityForToday = (
   const nextHour = nextMinute === 0 ? hour + 1 : hour;
   const nextPossibleOpenTime = { hour: nextHour, minute: nextMinute };
 
+  // CASE 2: Space is already closed for today => empty opening time
   const isClosed = compareTimes(nextPossibleOpenTime, close) >= 0;
   if (isClosed) {
     return { [currentDate]: {} };
   }
 
+  // CASE 3: Space is already open for today => partial opening time
   return {
     [currentDate]: {
       open: nextPossibleOpenTime,
@@ -86,9 +90,9 @@ export const fetchAvailabilityForToday = (
 /**
  * Calculate availability for tomorrow and all future days
  * @param space The space to fetch the availability for
+ * @param afterNotice The current date after the notice period
  * @param numberOfDays The number of days starting from tomorrow to fetch availability for
  *                     (f.e. just tomorrow => numberOfDays = 1)
- * @param now The time now
  * @returns availabilities for future days, f.e.:
  *   {
  *     "2020-09-08": {
@@ -105,24 +109,22 @@ export const fetchAvailabilityForToday = (
  */
 export const fetchAvailabilityForFutureDays = (
   space: Space,
-  numberOfDays: number,
-  now: Date
+  afterNotice: Date,
+  numberOfDays: number
 ): Record<string, OpeningTimes> => {
   if (numberOfDays < 1) {
     return {};
   }
-  const nowWithNotice = new Date(
-    now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
-  );
-  const { day } = dateInTimezone(nowWithNotice, space.timeZone);
+
+  const { day } = dateInTimezone(afterNotice, space.timeZone);
+  // Start tomorrow, as today will already be handled in fetchAvailabilityForToday
   const startDay = (day + 1) % 7;
+  const startDateMs = afterNotice.valueOf() + DAY_IN_MSEC;
 
   const availabilities: Record<string, OpeningTimes> = {};
   for (let i = 0; i < numberOfDays; i++) {
     const currentDay = (startDay + i) % 7;
-    const currentDate = formatIsoDate(
-      new Date(nowWithNotice.valueOf() + (i + 1) * DAY_IN_MSEC)
-    );
+    const currentDate = formatIsoDate(new Date(startDateMs + i * DAY_IN_MSEC));
     availabilities[currentDate] = space.openingTimes[currentDay || 7] || {};
   }
   return availabilities;
