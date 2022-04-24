@@ -31,6 +31,13 @@ export const fetchAvailability = (
     };
   }
 
+  const wasClosed = compareTimes({ hour, minute }, close) >= 0;
+  if (wasClosed) {
+    return {
+      [formatIsoDate(now)]: {},
+    };
+  }
+
   return {
     [formatIsoDate(now)]: {
       open: {
