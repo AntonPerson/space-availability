@@ -24,18 +24,6 @@ dayjs.extend(dayjs_plugin_utc);
 dayjs.extend(dayjs_plugin_timezone);
 
 /**
- * Rounds a given minute to the next increment of 15 minutes
- * @param actualMinute the minute to be rounded, f.e. 22
- * @returns next 15 minutes increment:
- *    [0, 46..60] => 0,
- *    [1..15] => 15,
- *    [16..30] => 30,
- *    [31..45] => 45
- */
-export const next15MinutesInterval = (actualMinute: number) =>
-  (Math.ceil(actualMinute / 15) * 15) % 60;
-
-/**
  * Transform a date into a different timezone
  * @param date any date, like `new Date()`
  * @param timezone the timezone as IANA timezone string, f.e. "America/New_York"

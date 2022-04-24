@@ -1,9 +1,5 @@
 import * as expect from "expect";
-import {
-  dateInTimezone,
-  next15MinutesInterval,
-  formatIsoDate,
-} from "./date-utils";
+import { dateInTimezone, formatIsoDate } from "./date-utils";
 
 describe("src/date-utils", () => {
   describe("dateInTimezone(date, timezone)", () => {
@@ -41,18 +37,6 @@ describe("src/date-utils", () => {
         "America/Los_Angeles"
       );
       expect(result.day).toStrictEqual(7); // -> Los Angeles: Sunday evening
-    });
-  });
-
-  describe("next15MinutesInterval(minute)", () => {
-    it("rounds 22 to 30", () => {
-      expect(next15MinutesInterval(22)).toStrictEqual(30);
-    });
-    it("rounds 59 to 0", () => {
-      expect(next15MinutesInterval(59)).toStrictEqual(0);
-    });
-    it("rounds 70 to 15", () => {
-      expect(next15MinutesInterval(70)).toStrictEqual(15);
     });
   });
 
