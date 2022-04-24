@@ -1,5 +1,6 @@
 import * as expect from "expect";
 import { fetchAvailability } from "./index";
+import { DAY_IN_MSEC, MINUTE_IN_MSEC } from "./time-utils";
 import { Space } from "./types";
 
 describe("src/index", () => {
@@ -152,6 +153,39 @@ describe("src/index", () => {
           "2020-09-07": {
             open: {
               hour: 12,
+              minute: 0,
+            },
+            close: {
+              hour: 17,
+              minute: 0,
+            },
+          },
+        });
+      });
+    });
+
+    describe("fetches availability for multiple days", () => {
+      it("after the space has already opened", () => {
+        const availability = fetchAvailability(
+          { ...space, minimumNotice: (DAY_IN_MSEC * 3) / MINUTE_IN_MSEC },
+          2,
+          new Date(Date.UTC(2020, 8, 7, 15, 22))
+        );
+
+        expect(availability).toStrictEqual({
+          "2020-09-10": {
+            open: {
+              hour: 11,
+              minute: 30,
+            },
+            close: {
+              hour: 17,
+              minute: 0,
+            },
+          },
+          "2020-09-11": {
+            open: {
+              hour: 9,
               minute: 0,
             },
             close: {
