@@ -1,6 +1,6 @@
 import { OpeningTimes, Space, Time } from "./types";
 import { dateInTimezone, formatIsoDate } from "./date-utils";
-import { compareTimes, next15MinutesInterval } from "./time-utils";
+import { compareTimes, next15MinutesInterval, DAY_IN_MSEC } from "./time-utils";
 
 /**
  * Fetches upcoming availability for a space
@@ -19,12 +19,14 @@ export const fetchAvailability = (
     minute,
   });
   const currentDate = formatIsoDate(now);
-
+  const future = fetchAvailabilityForFutureDays(space, numberOfDays, now);
   return {
     [currentDate]: today,
+    ...future,
   };
 };
 
+// TODO: should have better signature
 /**
  * Calculate availability just for today
  * @param todaysOpeningTimes - the opening times for today
@@ -58,4 +60,46 @@ export const fetchAvailabilityForToday = (
     open: nextPossibleOpenTime,
     close,
   };
+};
+
+/**
+ * Calculate availability for tomorrow and all future days
+ * @param space The space to fetch the availability for
+ * @param numberOfDays The number of days from `now` to fetch availability for
+ * @param now The time now
+ * @returns availabilities for future days, f.e.:
+ *   {
+ *     "2020-09-08": {
+ *       open: {
+ *         hour: 9,
+ *         minute: 0,
+ *       },
+ *       close: {
+ *         hour: 17,
+ *         minute: 0,
+ *       },
+ *     },
+ *   }
+ */
+export const fetchAvailabilityForFutureDays = (
+  space: Space,
+  numberOfDays: number,
+  now: Date
+): Record<string, OpeningTimes> => {
+  if (numberOfDays < 2) {
+    return {};
+  }
+  const { day } = dateInTimezone(now, space.timeZone);
+  const today = day - 1; // TODO: day should probably be zero-based
+  const startDay = (today + 1) % 7;
+
+  const availabilities: Record<string, OpeningTimes> = {};
+  for (let i = 0; i < numberOfDays - 1; i++) {
+    const currentDay = (startDay + i) % 7;
+    const currentDate = formatIsoDate(
+      new Date(now.valueOf() + (i + 1) * DAY_IN_MSEC)
+    );
+    availabilities[currentDate] = space.openingTimes[currentDay + 1];
+  }
+  return availabilities;
 };
