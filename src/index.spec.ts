@@ -97,5 +97,38 @@ describe("src/index", () => {
         });
       });
     });
+
+    describe("fetches availability for multiple days", () => {
+      it("after the space has already opened today + the times for tomorrow", () => {
+        const availability = fetchAvailability(
+          space,
+          2,
+          new Date(Date.UTC(2020, 8, 7, 15, 22))
+        );
+
+        expect(availability).toStrictEqual({
+          "2020-09-07": {
+            open: {
+              hour: 11,
+              minute: 30,
+            },
+            close: {
+              hour: 17,
+              minute: 0,
+            },
+          },
+          "2020-09-08": {
+            open: {
+              hour: 9,
+              minute: 0,
+            },
+            close: {
+              hour: 17,
+              minute: 0,
+            },
+          },
+        });
+      });
+    });
   });
 });
