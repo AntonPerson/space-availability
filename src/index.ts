@@ -112,14 +112,17 @@ export const fetchAvailabilityForFutureDays = (
   if (numberOfDays < 2) {
     return {};
   }
-  const { day } = dateInTimezone(now, space.timeZone);
+  const nowWithNotice = new Date(
+    now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
+  );
+  const { day } = dateInTimezone(nowWithNotice, space.timeZone);
   const startDay = (day + 1) % 7;
 
   const availabilities: Record<string, OpeningTimes> = {};
   for (let i = 0; i < numberOfDays - 1; i++) {
     const currentDay = (startDay + i) % 7;
     const currentDate = formatIsoDate(
-      new Date(now.valueOf() + (i + 1) * DAY_IN_MSEC)
+      new Date(nowWithNotice.valueOf() + (i + 1) * DAY_IN_MSEC)
     );
     availabilities[currentDate] = space.openingTimes[currentDay || 7] || {};
   }
