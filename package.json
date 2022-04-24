@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "A task for Desana to calculate when a space is available depending on specific criteria.",
   "main": "dist/index.js",
+  "engines": {
+    "node": ">= 13.0.0"
+  },
   "scripts": {
     "test": "mocha --colors -r ts-node/register 'src/**/*.spec.ts'",
     "test:watch": "mocha -r ts-node/register --watch --watch-files src, src/**/*.spec.ts"

@@ -93,7 +93,7 @@ export const fetchAvailabilityForToday = (
  * @param afterNotice The current date after the notice period
  * @param numberOfDays The number of days starting from tomorrow to fetch availability for
  *                     (f.e. just tomorrow => numberOfDays = 1)
- * @returns availabilities for future days, f.e.:
+ * @returns availability for future days, f.e.:
  *   {
  *     "2020-09-08": {
  *       open: {
@@ -121,11 +121,11 @@ export const fetchAvailabilityForFutureDays = (
   const startDay = (day + 1) % 7;
   const startDateMs = afterNotice.valueOf() + DAY_IN_MSEC;
 
-  const availabilities: Record<string, OpeningTimes> = {};
+  const availability: Record<string, OpeningTimes> = {};
   for (let i = 0; i < numberOfDays; i++) {
     const currentDay = (startDay + i) % 7;
     const currentDate = formatIsoDate(new Date(startDateMs + i * DAY_IN_MSEC));
-    availabilities[currentDate] = space.openingTimes[currentDay || 7] || {};
+    availability[currentDate] = space.openingTimes[currentDay || 7] || {};
   }
-  return availabilities;
+  return availability;
 };
