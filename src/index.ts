@@ -1,6 +1,11 @@
-import { OpeningTimes, Space, Time } from "./types";
+import { OpeningTimes, Space } from "./types";
 import { dateInTimezone, formatIsoDate } from "./date-utils";
-import { compareTimes, next15MinutesInterval, DAY_IN_MSEC } from "./time-utils";
+import {
+  compareTimes,
+  next15MinutesInterval,
+  DAY_IN_MSEC,
+  MINUTE_IN_MSEC,
+} from "./time-utils";
 
 /**
  * Fetches upcoming availability for a space
@@ -46,8 +51,11 @@ export const fetchAvailabilityForToday = (
   if (!numberOfDays || numberOfDays < 1) {
     return {};
   }
-  const { day, hour, minute } = dateInTimezone(now, space.timeZone);
-  const currentDate = formatIsoDate(now);
+  const nowWithNotice = new Date(
+    now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
+  );
+  const { day, hour, minute } = dateInTimezone(nowWithNotice, space.timeZone);
+  const currentDate = formatIsoDate(nowWithNotice);
 
   const { open, close } = space.openingTimes[day || 7] || {};
   if (!open || !close) {

@@ -2,6 +2,7 @@ import { Time } from "./types";
 
 // A day in miliseconds
 export const DAY_IN_MSEC = 86400000; // 24 * 60 * 60 * 1000;
+export const MINUTE_IN_MSEC = 60000; // 60 * 1000
 
 /**
  * Compare different times
