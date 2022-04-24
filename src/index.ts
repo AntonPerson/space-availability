@@ -25,6 +25,12 @@ export const fetchAvailability = (
   };
 };
 
+/**
+ * Calculate availability just for today
+ * @param todaysOpeningTimes - the opening times for today
+ * @param currentTime - the current time
+ * @returns availability for today
+ */
 export const fetchAvailabilityForToday = (
   { open, close }: OpeningTimes,
   { hour, minute }: Time
@@ -41,24 +47,15 @@ export const fetchAvailabilityForToday = (
   const nextMinute = next15MinutesInterval(minute);
   // If we shift into next hour, we need to increase the hour as well
   const nextHour = nextMinute === 0 ? hour + 1 : hour;
+  const nextPossibleOpenTime = { hour: nextHour, minute: nextMinute };
 
-  const isClosed =
-    compareTimes(
-      {
-        hour: nextHour,
-        minute: nextMinute,
-      },
-      close
-    ) >= 0;
+  const isClosed = compareTimes(nextPossibleOpenTime, close) >= 0;
   if (isClosed) {
     return {};
   }
 
   return {
-    open: {
-      hour: nextHour,
-      minute: nextMinute,
-    },
+    open: nextPossibleOpenTime,
     close,
   };
 };
