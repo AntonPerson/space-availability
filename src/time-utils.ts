@@ -29,3 +29,15 @@ export const compareTimes = (timeA: Time, timeB: Time) => {
  */
 export const next15MinutesInterval = (actualMinute: number) =>
   (Math.ceil((actualMinute + 1) / 15) * 15) % 60;
+
+/**
+ * Shift time to the next possible 15 minutes increment
+ * @param time the time to shift
+ * @returns shifted time
+ */
+export const nextSlot = ({ hour, minute }: Time): Time => {
+  const nextMinute = next15MinutesInterval(minute);
+  // If we shift into next hour, we need to increase the hour as well
+  const nextHour = nextMinute === 0 ? hour + 1 : hour;
+  return { hour: nextHour, minute: nextMinute };
+};

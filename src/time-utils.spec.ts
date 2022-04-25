@@ -1,5 +1,5 @@
 import * as expect from "expect";
-import { compareTimes, next15MinutesInterval } from "./time-utils";
+import { compareTimes, next15MinutesInterval, nextSlot } from "./time-utils";
 
 describe("src/time-utils", () => {
   describe("compareTimes(timeA, timeB)", () => {
@@ -48,6 +48,20 @@ describe("src/time-utils", () => {
     });
     it("rounds 70 to 15", () => {
       expect(next15MinutesInterval(70)).toStrictEqual(15);
+    });
+  });
+
+  describe("nextPossibleOpenTime", () => {
+    it("can shift time to next hour", () => {
+      expect(
+        nextSlot({
+          hour: 1,
+          minute: 50,
+        })
+      ).toStrictEqual({
+        hour: 2,
+        minute: 0,
+      });
     });
   });
 });

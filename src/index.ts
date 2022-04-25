@@ -2,7 +2,7 @@ import { OpeningTimes, Space } from "./types";
 import { dateInTimezone, formatIsoDate } from "./date-utils";
 import {
   compareTimes,
-  next15MinutesInterval,
+  nextSlot,
   DAY_IN_MSEC,
   MINUTE_IN_MSEC,
 } from "./time-utils";
@@ -62,26 +62,21 @@ export const fetchAvailabilityForToday = (
   }
 
   // CASE 1: Space is not opened yet for today => full opening time
-  const wasOpened = compareTimes({ hour, minute }, open) >= 0;
-  if (!wasOpened) {
+  if (compareTimes({ hour, minute }, open) < 0) {
     return { [currentDate]: { open, close } };
   }
 
-  const nextMinute = next15MinutesInterval(minute);
-  // If we shift into next hour, we need to increase the hour as well
-  const nextHour = nextMinute === 0 ? hour + 1 : hour;
-  const nextPossibleOpenTime = { hour: nextHour, minute: nextMinute };
+  const nextOpen = nextSlot({ hour, minute });
 
   // CASE 2: Space is already closed for today => empty opening time
-  const isClosed = compareTimes(nextPossibleOpenTime, close) >= 0;
-  if (isClosed) {
+  if (compareTimes(nextOpen, close) >= 0) {
     return { [currentDate]: {} };
   }
 
   // CASE 3: Space is already open for today => partial opening time
   return {
     [currentDate]: {
-      open: nextPossibleOpenTime,
+      open: nextOpen,
       close,
     },
   };
