@@ -53,7 +53,10 @@ export const fetchAvailabilityForToday = (
   space: Space,
   afterNotice: Date
 ): Record<string, OpeningTimes> => {
-  const { day, hour, minute } = dateInTimezone(afterNotice, space.timeZone);
+  const { day, time: currentTime } = dateInTimezone(
+    afterNotice,
+    space.timeZone
+  );
   const currentDate = formatIsoDate(afterNotice);
 
   const { open, close } = space.openingTimes[day || 7] || {};
@@ -62,21 +65,21 @@ export const fetchAvailabilityForToday = (
   }
 
   // CASE 1: Space is not opened yet for today => full opening time
-  if (compareTimes({ hour, minute }, open) < 0) {
+  if (compareTimes(currentTime, open) < 0) {
     return { [currentDate]: { open, close } };
   }
 
-  const nextOpen = nextSlot({ hour, minute });
+  const nextTime = nextSlot(currentTime);
 
   // CASE 2: Space is already closed for today => empty opening time
-  if (compareTimes(nextOpen, close) >= 0) {
+  if (compareTimes(nextTime, close) >= 0) {
     return { [currentDate]: {} };
   }
 
   // CASE 3: Space is already open for today => partial opening time
   return {
     [currentDate]: {
-      open: nextOpen,
+      open: nextTime,
       close,
     },
   };

@@ -10,8 +10,10 @@ describe("src/date-utils", () => {
       );
       expect(result).toStrictEqual({
         day: 1,
-        hour: 11,
-        minute: 22,
+        time: {
+          hour: 11,
+          minute: 22,
+        },
       });
     });
 

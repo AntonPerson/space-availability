@@ -29,16 +29,18 @@ dayjs.extend(dayjs_plugin_timezone);
  * @param timezone the timezone as IANA timezone string, f.e. "America/New_York"
  *
  * @returns day - day of the week, from 0 as Sunday to 6 as Saturday
- * @returns hour - the hour, 0-23
- * @returns minute - the minute, 0-59
+ * @returns time.hour - the hour, 0-23
+ * @returns time.minute - the minute, 0-59
  */
 export const dateInTimezone = (date: Date, timezone: string) => {
   const dayjsDate = dayjs(date).tz(timezone, false);
 
   return {
     day: dayjsDate.day(),
-    hour: dayjsDate.hour(),
-    minute: dayjsDate.minute(),
+    time: {
+      hour: dayjsDate.hour(),
+      minute: dayjsDate.minute(),
+    },
   };
 };
 
