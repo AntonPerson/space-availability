@@ -1,15 +1,24 @@
 import * as expect from "expect";
-import { dateInTimezone } from "./date-utils";
+import { dateInTimezone, dayAndTimeInTimezone } from "./date-utils";
 
 describe("src/date-utils", () => {
   describe("dateInTimezone(date, timezone)", () => {
-    it("transforms a date into a given timezone -> { day, hour, minute }", () => {
+    it("transforms a date into a given timezone -> ISO date", () => {
       const result = dateInTimezone(
+        new Date(Date.UTC(2020, 8, 7, 1, 22)),
+        "America/New_York"
+      );
+      expect(result).toStrictEqual("2020-09-06");
+    });
+  });
+
+  describe("dayAndTimeInTimezone(date, timezone)", () => {
+    it("transforms a date into a given timezone -> { day, time: { hour, minute } }", () => {
+      const result = dayAndTimeInTimezone(
         new Date(Date.UTC(2020, 8, 7, 15, 22)),
         "America/New_York"
       );
       expect(result).toStrictEqual({
-        date: "2020-09-07",
         day: 1, // => Monday
         time: {
           hour: 11,
@@ -19,7 +28,7 @@ describe("src/date-utils", () => {
     });
 
     it("uses 0 as day for Sunday", () => {
-      const result = dateInTimezone(
+      const result = dayAndTimeInTimezone(
         new Date(Date.UTC(2020, 8, 6, 15, 22)),
         "America/New_York"
       );
@@ -27,7 +36,7 @@ describe("src/date-utils", () => {
     });
 
     it("uses next day if timezone shifts time after midnight", () => {
-      const result = dateInTimezone(
+      const result = dayAndTimeInTimezone(
         new Date(Date.UTC(2020, 8, 6, 22, 22)), // -> London: Sunday evening
         "Asia/Tokyo"
       );
@@ -35,7 +44,7 @@ describe("src/date-utils", () => {
     });
 
     it("uses last day if timezone shifts time before midnight", () => {
-      const result = dateInTimezone(
+      const result = dayAndTimeInTimezone(
         new Date(Date.UTC(2020, 8, 7, 4, 22)), // -> London: Monday morning
         "America/Los_Angeles"
       );

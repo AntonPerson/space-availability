@@ -24,7 +24,20 @@ dayjs.extend(dayjs_plugin_utc);
 dayjs.extend(dayjs_plugin_timezone);
 
 /**
- * Transform a date into a different timezone
+ * Transform a date into a different timezone, format as ISO date
+ * @param date any date, like `new Date()`
+ * @param timezone the timezone as IANA timezone string, f.e. "America/New_York"
+ *
+ * @returns date - ISO date, like "2020-09-07"
+ */
+export const dateInTimezone = (date: Date, timezone: string) => {
+  const dayjsDate = dayjs(date).tz(timezone, false);
+
+  return dayjsDate.format("YYYY-MM-DD");
+};
+
+/**
+ * Transform a date into a different timezone, output day of the week and time
  * @param date any date, like `new Date()`
  * @param timezone the timezone as IANA timezone string, f.e. "America/New_York"
  *
@@ -32,11 +45,10 @@ dayjs.extend(dayjs_plugin_timezone);
  * @returns time.hour - the hour, 0-23
  * @returns time.minute - the minute, 0-59
  */
-export const dateInTimezone = (date: Date, timezone: string) => {
+export const dayAndTimeInTimezone = (date: Date, timezone: string) => {
   const dayjsDate = dayjs(date).tz(timezone, false);
 
   return {
-    date: dayjsDate.format("YYYY-MM-DD"),
     day: dayjsDate.day(),
     time: {
       hour: dayjsDate.hour(),

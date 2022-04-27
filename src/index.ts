@@ -1,5 +1,5 @@
 import { OpeningTimes, Space } from "./types";
-import { dateInTimezone } from "./date-utils";
+import { dateInTimezone, dayAndTimeInTimezone } from "./date-utils";
 import {
   compareTimes,
   nextSlot,
@@ -30,7 +30,7 @@ export const fetchAvailability = (
   const availability: Record<string, OpeningTimes> = {};
   // CASE 1: We are still fully inside the notice period => empty availability
   for (let i = 0; i < Math.min(noticeDays, numberOfDays); i++) {
-    const { date } = dateInTimezone(
+    const date = dateInTimezone(
       new Date(now.valueOf() + i * DAY_IN_MSEC),
       space.timeZone
     );
@@ -42,16 +42,16 @@ export const fetchAvailability = (
     const afterNotice = new Date(
       now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
     );
-    const { date } = dateInTimezone(afterNotice, space.timeZone);
+    const date = dateInTimezone(afterNotice, space.timeZone);
     availability[date] = fetchPartialAvailability(space, afterNotice);
   }
 
   // CASE 3: We are completely out of the notice period => full availability
-  const { day: startDay } = dateInTimezone(now, space.timeZone);
+  const { day: startDay } = dayAndTimeInTimezone(now, space.timeZone);
   for (let i = noticeDays + 1; i < numberOfDays; i++) {
     const currentDay = (startDay + i) % 7;
     const currentDate = new Date(now.valueOf() + i * DAY_IN_MSEC);
-    const { date } = dateInTimezone(currentDate, space.timeZone);
+    const date = dateInTimezone(currentDate, space.timeZone);
     availability[date] = space.openingTimes[currentDay || 7] || {};
   }
   return availability;
@@ -73,8 +73,8 @@ export const fetchPartialAvailability = (
   space: Space,
   now: Date
 ): OpeningTimes => {
-  const { day: today } = dateInTimezone(now, space.timeZone);
-  const { day, time: currentTime } = dateInTimezone(now, space.timeZone);
+  const { day: today } = dayAndTimeInTimezone(now, space.timeZone);
+  const { day, time: currentTime } = dayAndTimeInTimezone(now, space.timeZone);
   // Advance notice period is too long for today => empty opening time
   if (day != today) {
     return {};
