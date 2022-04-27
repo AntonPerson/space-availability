@@ -39,11 +39,13 @@ export const fetchAvailability = (
   }
 
   // CASE 2: We are at the day where notice period ends => partial availability
-  const afterNotice = new Date(
-    now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
-  );
-  const { date } = dateInTimezone(afterNotice, space.timeZone);
-  availability[date] = fetchPartialAvailability(space, afterNotice);
+  if (noticeDays < numberOfDays) {
+    const afterNotice = new Date(
+      now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
+    );
+    const { date } = dateInTimezone(afterNotice, space.timeZone);
+    availability[date] = fetchPartialAvailability(space, afterNotice);
+  }
 
   // CASE 3: We are completely out of the notice period => full availability
   for (let i = noticeDays + 1; i < numberOfDays; i++) {
