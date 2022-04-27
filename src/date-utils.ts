@@ -36,6 +36,7 @@ export const dateInTimezone = (date: Date, timezone: string) => {
   const dayjsDate = dayjs(date).tz(timezone, false);
 
   return {
+    date: dayjsDate.format("YYYY-MM-DD"),
     day: dayjsDate.day(),
     time: {
       hour: dayjsDate.hour(),
@@ -45,9 +46,13 @@ export const dateInTimezone = (date: Date, timezone: string) => {
 };
 
 /**
- * Format a date as ISO string
- * @param date any date
- * @returns formatted string, f.e. "2020-09-07"
+ * Compare two dates while only considering their date components
+ * @param dateA - first date
+ * @param dateB - second date
+ * @returns amout of days between both dates
+ *   - negative if first date comes before the second, f.e. 2020-09-07 < 2020-09-08
+ *   0 if both dates are on the same day (time does not matter)
+ *   + positive if first date comes after the second, f.e. 2020-09-07 > 2020-09-06
  */
-export const formatIsoDate = (date: Date) =>
-  date.toISOString().substring(0, 10);
+export const compareDates = (dateA: Date, dateB: Date) =>
+  dayjs(dateA).startOf("day").diff(dayjs(dateB).startOf("day"), "date");

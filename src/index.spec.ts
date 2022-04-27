@@ -133,7 +133,7 @@ describe("src/index", () => {
     });
   });
 
-  describe("a space with 30 minutes advance notice", () => {
+  describe("a space with advance notice", () => {
     let space: Space;
     before(async () => {
       space = await import(
@@ -141,59 +141,56 @@ describe("src/index", () => {
       );
     });
 
-    describe("fetches availability for a space today", () => {
-      it("after the space has already opened", () => {
-        const availability = fetchAvailability(
-          space,
-          1,
-          new Date(Date.UTC(2020, 8, 7, 15, 22))
-        );
+    it("fetches availability for a space today with 30 minutes notice", () => {
+      const availability = fetchAvailability(
+        space,
+        1,
+        new Date(Date.UTC(2020, 8, 7, 15, 22))
+      );
 
-        expect(availability).toStrictEqual({
-          "2020-09-07": {
-            open: {
-              hour: 12,
-              minute: 0,
-            },
-            close: {
-              hour: 17,
-              minute: 0,
-            },
+      expect(availability).toStrictEqual({
+        "2020-09-07": {
+          open: {
+            hour: 12,
+            minute: 0,
           },
-        });
+          close: {
+            hour: 17,
+            minute: 0,
+          },
+        },
       });
     });
 
-    describe("fetches availability for multiple days", () => {
-      it("after the space has already opened", () => {
-        const availability = fetchAvailability(
-          { ...space, minimumNotice: (DAY_IN_MSEC * 3) / MINUTE_IN_MSEC },
-          2,
-          new Date(Date.UTC(2020, 8, 7, 15, 22))
-        );
+    it("fetches availability for multiple days with a day notice", () => {
+      const availability = fetchAvailability(
+        { ...space, minimumNotice: DAY_IN_MSEC / MINUTE_IN_MSEC },
+        3,
+        new Date(Date.UTC(2020, 8, 7, 15, 22))
+      );
 
-        expect(availability).toStrictEqual({
-          "2020-09-10": {
-            open: {
-              hour: 11,
-              minute: 30,
-            },
-            close: {
-              hour: 17,
-              minute: 0,
-            },
+      expect(availability).toStrictEqual({
+        "2020-09-07": {},
+        "2020-09-08": {
+          open: {
+            hour: 11,
+            minute: 30,
           },
-          "2020-09-11": {
-            open: {
-              hour: 9,
-              minute: 0,
-            },
-            close: {
-              hour: 17,
-              minute: 0,
-            },
+          close: {
+            hour: 17,
+            minute: 0,
           },
-        });
+        },
+        "2020-09-09": {
+          open: {
+            hour: 9,
+            minute: 0,
+          },
+          close: {
+            hour: 17,
+            minute: 0,
+          },
+        },
       });
     });
   });

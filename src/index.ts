@@ -1,5 +1,5 @@
 import { OpeningTimes, Space } from "./types";
-import { dateInTimezone, formatIsoDate } from "./date-utils";
+import { compareDates, dateInTimezone } from "./date-utils";
 import {
   compareTimes,
   nextSlot,
@@ -21,109 +21,81 @@ export const fetchAvailability = (
   if (!numberOfDays || numberOfDays < 1) {
     return {};
   }
+
+  // Calculate the moment when the advance notice period is over
   const afterNotice = new Date(
     now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
   );
+  const { day: startDay } = dateInTimezone(now, space.timeZone);
 
-  return {
-    ...fetchAvailabilityForToday(space, afterNotice),
-    ...fetchAvailabilityForFutureDays(space, afterNotice, numberOfDays - 1),
-  };
+  const availability: Record<string, OpeningTimes> = {};
+  for (let i = 0; i < numberOfDays; i++) {
+    const currentDay = (startDay + i) % 7;
+    const currentDate = new Date(now.valueOf() + i * DAY_IN_MSEC);
+    const { date } = dateInTimezone(currentDate, space.timeZone);
+    const diff = compareDates(currentDate, afterNotice);
+
+    // CASE 1: We are still fully inside the notice period => empty availability
+    if (diff < 0) {
+      availability[date] = {};
+    }
+
+    // CASE 2: We are at the day where notice period ends => partial availability
+    if (diff === 0) {
+      availability[date] = fetchPartialAvailability(space, afterNotice);
+    }
+
+    // CASE 3: We are completely out of the notice period => full availability
+    if (diff > 0) {
+      availability[date] = space.openingTimes[currentDay || 7] || {};
+    }
+  }
+  return availability;
 };
 
 /**
- * Calculate availability just for today
+ * Calculate availability for just one day
  * @param space The space to fetch the availability for
- * @param afterNotice The current date after the notice period
- * @returns availability for today, f.e.:
+ * @param now The time now
+ * @returns opening times for the day, f.e.:
+ * ```
  *   {
- *     "2020-09-07": {
- *       open: {
- *         hour: 11,
- *         minute: 30,
- *       },
- *       close: {
- *         hour: 17,
- *         minute: 0,
- *       },
- *     },
+ *     open: { hour: 11, minute: 30 },
+ *     close: { hour: 17, minute: 0 },
  *   }
+ * ```
  */
-export const fetchAvailabilityForToday = (
+export const fetchPartialAvailability = (
   space: Space,
-  afterNotice: Date
-): Record<string, OpeningTimes> => {
-  const { day, time: currentTime } = dateInTimezone(
-    afterNotice,
-    space.timeZone
-  );
-  const currentDate = formatIsoDate(afterNotice);
+  now: Date
+): OpeningTimes => {
+  const { day: today } = dateInTimezone(now, space.timeZone);
+  const { day, time: currentTime } = dateInTimezone(now, space.timeZone);
+  // Advance notice period is too long for today => empty opening time
+  if (day != today) {
+    return {};
+  }
 
   const { open, close } = space.openingTimes[day || 7] || {};
   if (!open || !close) {
-    return { [currentDate]: {} };
+    return {};
   }
 
   // CASE 1: Space is not opened yet for today => full opening time
   if (compareTimes(currentTime, open) < 0) {
-    return { [currentDate]: { open, close } };
+    return { open, close };
   }
 
   const nextTime = nextSlot(currentTime);
 
   // CASE 2: Space is already closed for today => empty opening time
   if (compareTimes(nextTime, close) >= 0) {
-    return { [currentDate]: {} };
+    return {};
   }
 
   // CASE 3: Space is already open for today => partial opening time
   return {
-    [currentDate]: {
-      open: nextTime,
-      close,
-    },
+    open: nextTime,
+    close,
   };
-};
-
-/**
- * Calculate availability for tomorrow and all future days
- * @param space The space to fetch the availability for
- * @param afterNotice The current date after the notice period
- * @param numberOfDays The number of days starting from tomorrow to fetch availability for
- *                     (f.e. just tomorrow => numberOfDays = 1)
- * @returns availability for future days, f.e.:
- *   {
- *     "2020-09-08": {
- *       open: {
- *         hour: 9,
- *         minute: 0,
- *       },
- *       close: {
- *         hour: 17,
- *         minute: 0,
- *       },
- *     },
- *   }
- */
-export const fetchAvailabilityForFutureDays = (
-  space: Space,
-  afterNotice: Date,
-  numberOfDays: number
-): Record<string, OpeningTimes> => {
-  if (numberOfDays < 1) {
-    return {};
-  }
-
-  const { day } = dateInTimezone(afterNotice, space.timeZone);
-  // Start tomorrow, as today will already be handled in fetchAvailabilityForToday
-  const startDay = (day + 1) % 7;
-  const startDateMs = afterNotice.valueOf() + DAY_IN_MSEC;
-
-  const availability: Record<string, OpeningTimes> = {};
-  for (let i = 0; i < numberOfDays; i++) {
-    const currentDay = (startDay + i) % 7;
-    const currentDate = formatIsoDate(new Date(startDateMs + i * DAY_IN_MSEC));
-    availability[currentDate] = space.openingTimes[currentDay || 7] || {};
-  }
-  return availability;
 };

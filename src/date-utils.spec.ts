@@ -1,5 +1,5 @@
 import * as expect from "expect";
-import { dateInTimezone, formatIsoDate } from "./date-utils";
+import { dateInTimezone } from "./date-utils";
 
 describe("src/date-utils", () => {
   describe("dateInTimezone(date, timezone)", () => {
@@ -9,7 +9,8 @@ describe("src/date-utils", () => {
         "America/New_York"
       );
       expect(result).toStrictEqual({
-        day: 1,
+        date: "2020-09-07",
+        day: 1, // => Monday
         time: {
           hour: 11,
           minute: 22,
@@ -39,13 +40,6 @@ describe("src/date-utils", () => {
         "America/Los_Angeles"
       );
       expect(result.day).toStrictEqual(0); // -> Los Angeles: Sunday evening
-    });
-  });
-
-  describe("formatIsoDate(date)", () => {
-    it('formats a date as an ISO string, like "2020-09-07"', () => {
-      const isoDate = formatIsoDate(new Date(Date.UTC(2020, 8, 7)));
-      expect(isoDate).toStrictEqual("2020-09-07");
     });
   });
 });
