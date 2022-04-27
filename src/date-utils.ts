@@ -44,15 +44,3 @@ export const dateInTimezone = (date: Date, timezone: string) => {
     },
   };
 };
-
-/**
- * Compare two dates while only considering their date components
- * @param dateA - first date
- * @param dateB - second date
- * @returns amout of days between both dates
- *   - negative if first date comes before the second, f.e. 2020-09-07 < 2020-09-08
- *   0 if both dates are on the same day (time does not matter)
- *   + positive if first date comes after the second, f.e. 2020-09-07 > 2020-09-06
- */
-export const compareDates = (dateA: Date, dateB: Date) =>
-  dayjs(dateA).startOf("day").diff(dayjs(dateB).startOf("day"), "date");

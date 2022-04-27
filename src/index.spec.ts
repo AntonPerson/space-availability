@@ -1,6 +1,5 @@
 import * as expect from "expect";
 import { fetchAvailability } from "./index";
-import { DAY_IN_MSEC, MINUTE_IN_MSEC } from "./time-utils";
 import { Space } from "./types";
 
 describe("src/index", () => {
