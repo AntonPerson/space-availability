@@ -1,5 +1,5 @@
 import { OpeningTimes, Space } from "./types";
-import { compareDates, dateInTimezone } from "./date-utils";
+import { dateInTimezone } from "./date-utils";
 import {
   compareTimes,
   nextSlot,
@@ -23,32 +23,34 @@ export const fetchAvailability = (
   }
 
   // Calculate the moment when the advance notice period is over
-  const afterNotice = new Date(
-    now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
+  const noticeDays = Math.floor(
+    (space.minimumNotice * MINUTE_IN_MSEC) / DAY_IN_MSEC
   );
   const { day: startDay } = dateInTimezone(now, space.timeZone);
 
   const availability: Record<string, OpeningTimes> = {};
-  for (let i = 0; i < numberOfDays; i++) {
+  // CASE 1: We are still fully inside the notice period => empty availability
+  for (let i = 0; i < noticeDays; i++) {
+    const { date } = dateInTimezone(
+      new Date(now.valueOf() + i * DAY_IN_MSEC),
+      space.timeZone
+    );
+    availability[date] = {};
+  }
+
+  // CASE 2: We are at the day where notice period ends => partial availability
+  const afterNotice = new Date(
+    now.valueOf() + space.minimumNotice * MINUTE_IN_MSEC
+  );
+  const { date } = dateInTimezone(afterNotice, space.timeZone);
+  availability[date] = fetchPartialAvailability(space, afterNotice);
+
+  // CASE 3: We are completely out of the notice period => full availability
+  for (let i = noticeDays + 1; i < numberOfDays; i++) {
     const currentDay = (startDay + i) % 7;
     const currentDate = new Date(now.valueOf() + i * DAY_IN_MSEC);
     const { date } = dateInTimezone(currentDate, space.timeZone);
-    const diff = compareDates(currentDate, afterNotice);
-
-    // CASE 1: We are still fully inside the notice period => empty availability
-    if (diff < 0) {
-      availability[date] = {};
-    }
-
-    // CASE 2: We are at the day where notice period ends => partial availability
-    if (diff === 0) {
-      availability[date] = fetchPartialAvailability(space, afterNotice);
-    }
-
-    // CASE 3: We are completely out of the notice period => full availability
-    if (diff > 0) {
-      availability[date] = space.openingTimes[currentDay || 7] || {};
-    }
+    availability[date] = space.openingTimes[currentDay || 7] || {};
   }
   return availability;
 };
