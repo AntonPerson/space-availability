@@ -26,11 +26,10 @@ export const fetchAvailability = (
   const noticeDays = Math.floor(
     (space.minimumNotice * MINUTE_IN_MSEC) / DAY_IN_MSEC
   );
-  const { day: startDay } = dateInTimezone(now, space.timeZone);
 
   const availability: Record<string, OpeningTimes> = {};
   // CASE 1: We are still fully inside the notice period => empty availability
-  for (let i = 0; i < noticeDays; i++) {
+  for (let i = 0; i < Math.min(noticeDays, numberOfDays); i++) {
     const { date } = dateInTimezone(
       new Date(now.valueOf() + i * DAY_IN_MSEC),
       space.timeZone
@@ -48,6 +47,7 @@ export const fetchAvailability = (
   }
 
   // CASE 3: We are completely out of the notice period => full availability
+  const { day: startDay } = dateInTimezone(now, space.timeZone);
   for (let i = noticeDays + 1; i < numberOfDays; i++) {
     const currentDay = (startDay + i) % 7;
     const currentDate = new Date(now.valueOf() + i * DAY_IN_MSEC);
