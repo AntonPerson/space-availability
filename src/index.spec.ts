@@ -193,5 +193,19 @@ describe("src/index", () => {
         },
       });
     });
+
+    it("fetches empty availability if notice period is longer than number of days", () => {
+      const availability = fetchAvailability(
+        { ...space, minimumNotice: (3 * DAY_IN_MSEC) / MINUTE_IN_MSEC },
+        3,
+        new Date(Date.UTC(2020, 8, 7, 15, 22))
+      );
+
+      expect(availability).toStrictEqual({
+        "2020-09-07": {},
+        "2020-09-08": {},
+        "2020-09-09": {},
+      });
+    });
   });
 });
