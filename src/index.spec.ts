@@ -133,7 +133,7 @@ describe("src/index", () => {
     });
   });
 
-  describe("a space with advance notice", () => {
+  describe("a space with 30 mins advance notice", () => {
     let space: Space;
     before(async () => {
       space = await import(
@@ -141,7 +141,7 @@ describe("src/index", () => {
       );
     });
 
-    it("fetches availability for a space today with 30 minutes notice", () => {
+    it("fetches availability for a space today", () => {
       const availability = fetchAvailability(
         space,
         1,
@@ -161,42 +161,51 @@ describe("src/index", () => {
         },
       });
     });
+  });
 
-    it("fetches availability for multiple days with a day notice", () => {
+  describe("a space with 3 days advance notice", () => {
+    let space: Space;
+    before(async () => {
+      space = await import("../fixtures/space-with-3-days-advance-notice.json");
+    });
+
+    it("fetches availability for multiple days", () => {
       const availability = fetchAvailability(
-        { ...space, minimumNotice: DAY_IN_MSEC / MINUTE_IN_MSEC },
-        3,
-        new Date(Date.UTC(2020, 8, 7, 15, 22))
+        space,
+        5,
+        new Date(Date.UTC(2020, 8, 7, 22, 22))
       );
 
       expect(availability).toStrictEqual({
-        "2020-09-07": {},
-        "2020-09-08": {
+        "2020-09-08": {},
+        "2020-09-09": {},
+        "2020-09-10": {},
+        "2020-09-11": {
           open: {
-            hour: 11,
+            hour: 0,
             minute: 30,
           },
           close: {
-            hour: 17,
+            hour: 24,
             minute: 0,
           },
         },
-        "2020-09-09": {
+        "2020-09-12": {
           open: {
-            hour: 9,
+            hour: 0,
             minute: 0,
           },
           close: {
-            hour: 17,
+            hour: 24,
             minute: 0,
           },
         },
       });
     });
 
-    it("fetches empty availability if notice period is longer than number of days", () => {
+    it("fetches empty availability if notice period is >= number of days", () => {
       const availability = fetchAvailability(
-        { ...space, minimumNotice: (3 * DAY_IN_MSEC) / MINUTE_IN_MSEC },
+        space,
         3,
         new Date(Date.UTC(2020, 8, 7, 15, 22))
       );

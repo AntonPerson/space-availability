@@ -1,0 +1,76 @@
+{
+  "openingTimes": {
+    "1": {
+      "open": {
+        "hour": 0,
+        "minute": 0
+      },
+      "close": {
+        "hour": 24,
+        "minute": 0
+      }
+    },
+    "2": {
+      "open": {
+        "hour": 0,
+        "minute": 0
+      },
+      "close": {
+        "hour": 24,
+        "minute": 0
+      }
+    },
+    "3": {
+      "open": {
+        "hour": 0,
+        "minute": 0
+      },
+      "close": {
+        "hour": 24,
+        "minute": 0
+      }
+    },
+    "4": {
+      "open": {
+        "hour": 0,
+        "minute": 0
+      },
+      "close": {
+        "hour": 24,
+        "minute": 0
+      }
+    },
+    "5": {
+      "open": {
+        "hour": 0,
+        "minute": 0
+      },
+      "close": {
+        "hour": 24,
+        "minute": 0
+      }
+    },
+    "6": {
+      "open": {
+        "hour": 0,
+        "minute": 0
+      },
+      "close": {
+        "hour": 24,
+        "minute": 0
+      }
+    },
+    "7": {
+      "open": {
+        "hour": 0,
+        "minute": 0
+      },
+      "close": {
+        "hour": 24,
+        "minute": 0
+      }
+    }
+  },
+  "minimumNotice": 4320,
+  "timeZone": "Europe/Paris"
+}
