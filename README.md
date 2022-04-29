@@ -49,8 +49,4 @@ The returned data structure looks like this, with 6 June representing a day when
   "2020-06-07": {}
 }
 ```
-## The logistics
 
-If there's anything you don't fully understand, please reach out to us as soon as possible.
-
-You can either host the task on Github and send us the Github link, or feel free to archive the project folder (without `node_modules`!) and send it back to us.
